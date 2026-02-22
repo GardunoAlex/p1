@@ -68,5 +68,60 @@ You should not need to combine them, since they each examine a unique subset of 
 */
 
 int main(int argc, char *argv[]) {
+
+    /* 
+        STEP 1: Reading the file and setting up errors. 
+    */
+
+    // does the argument list need to have 4 items? 
+    if (argc != 4){
+        printf("Need four arguments");
+        return 1;
+    }
+
+    DIR *log_dir;
+    char num_mappers[] = argv[2];
+    char num_reducers[] = argv[3];
+    log_dir = opendir(argv[1]);
+    // log directory stream to check for all for all of the entries
+    struct dirent *log_dir_stream;
+
+    // check for number of mappers/reducers; if function doesn't return, args save to use in other functions.
+    if (atoi(num_mappers) < 1){
+        printf("Number of mappers have to be more than 1");
+        return 1;
+    }
+
+    if (atoi(num_reducers) < 1){
+        printf("Number of reducers have to be more than 1");
+        return 1;
+    }
+
+    if (log_dir = NULL){
+        perror("opendir");
+        exit (1);
+    } else{
+        printf("File has successfully opened");
+    }
+
+    /* 
+        STEP 2
+    */
+
+    //log_dir should be open if the program has made it to this point.
+
+    while ( (log_dir_stream = readdir(log_dir) ) != NULL){
+        // have to look for files with . or .. 
+        char *file_name[];
+        file_name = log_dir_stream -> d_name;
+        period_lookup = strchr(file_name, '.');
+
+        if (period_lookup != NULL){
+            printf("File: \n", file_name);
+        }
+    }
+    
+    // closed the initial log directory; I also think that the log_dir_stream closes with the closedir(log_dir) function call. 
+    closedir(log_dir);
     return 0;
 }
