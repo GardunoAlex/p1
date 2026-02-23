@@ -12,13 +12,19 @@ We will have to fork() the tasks to get the child process and pass them on to th
 
 Here we will have to include logic to make sure we get everything back from the mappers, and pass them on to the reducers. Could maybe use pipe() to streamline the process? 
 
+The logs from the files will be hashed by ip to new files by the mappers, and the reducers will each be assigned a set number of those files to read from. 
+
 map: 
 
 for the mappers, we will need to creat their "map" functions. we have to find a way to group them by similar numbers. after we have done this, the mappers can return back to main with the data, and main will delegate/split tasks for the reducers. 
 
+The logs will map based off of the hash of the ip of each log entry. 
+
 reducers:
 
 they will take in the data from the mappers once delegated from main. will have to incorporate logic to make reducers reduce based on byte range. 
+
+The reducers can read from the files that were written to by map, with each one being assigned to a specific set of the IP hash buckets. 
 
 implemention: 
 
