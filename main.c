@@ -85,7 +85,7 @@ int main(int argc, char *argv[]) {
 
     // does the argument list need to have 4 items?
     if (argc != 4) {
-        perror("Usage: mapreduce <directory> <n mappers> <n reducers>");
+        printf("Usage: mapreduce <directory> <n mappers> <n reducers> \n");
         return 1;
     }
 
@@ -99,12 +99,12 @@ int main(int argc, char *argv[]) {
     // check for number of mappers/reducers; if function doesn't return, args save to use in other
     // functions.
     if (atoi(num_mappers) < 1) {
-        printf("Number of mappers have to be more than 1");
+        printf("mapreduce: cannot have less than one mapper or reducer\n");
         return 1;
     }
 
     if (atoi(num_reducers) < 1) {
-        printf("Number of reducers have to be more than 1");
+        printf("Number of reducers have to be more than 1\n");
         return 1;
     }
 

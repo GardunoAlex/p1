@@ -19,7 +19,7 @@ bucket_t *bucket_init(const char ip[IP_LEN]) {
 
     strncpy(new_node->ip, ip, IP_LEN - 1);
 
-    new_node->requests = 0;
+    new_node->requests = 1;
 
     return new_node;
 }
@@ -77,14 +77,16 @@ int table_add(table_t *table, bucket_t *bucket) {
             bucket_t *temp = table->buckets[index];
 
             while (temp) {
-                if (temp->ip == bucket->ip) {
+                if (strcmp(temp->ip, bucket->ip) == 0) {
                     temp->requests++;
                     return 0;
                 }
                 temp = temp->next;
             }
-            bucket->next = temp;
+
+            bucket->next = table->buckets[index];
         }
+
         table->buckets[index] = bucket;
         return 0;
     } else {
