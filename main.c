@@ -104,7 +104,7 @@ int main(int argc, char *argv[]) {
     }
 
     if (atoi(num_reducers) < 1) {
-        printf("Number of reducers have to be more than 1\n");
+        printf("  mapreduce: cannot have less than one mapper or reducer\n");
         return 1;
     }
 
@@ -138,13 +138,86 @@ int main(int argc, char *argv[]) {
     while ((log_dir_stream = readdir(log_dir))) {
         char *file_name = log_dir_stream->d_name;
 
-        if (strcmp(file_name, ".") != 0 || strcmp(file_name, "..") != 0) {
-            file_names[count++] = file_name;
+        if (strcmp(file_name, ".") != 0 && strcmp(file_name, "..") != 0) {
+            int size = strlen(argv[1]) + strlen(file_name) + 2;
+            char *full_path = malloc(size);
+            if (full_path == NULL) {
+                perror("malloc");
+                exit(1);
+            }
+
+            snprintf(full_path, size, "%s/%s", argv[1], file_name);
+
+            file_names[count++] = full_path;
         }
     }
 
     // closed the initial log directory; I also think that the log_dir_stream closes with the
     // closedir(log_dir) function call.
     closedir(log_dir);
+
+    // Step 3: assign mappers to a file
+
+    pid_t pid;
+
+    int n_map = atoi(num_mappers);
+    int n_reduce = atoi(num_reducers);
+    int file_name_index = 0;
+    int file_names_rem = count % n_map;
+
+    for (int i = 0; i < n_map; i++) {
+        int num_files = (count / n_map) + (i < file_names_rem ? 1 : 0);
+
+        pid = fork();
+
+        if (pid < 0) {
+            perror("Fork failed in Step 3");
+            return 1;
+        } else if (pid == 0) {
+            char buffer[40];
+            snprintf(buffer, sizeof(buffer), "./intermediate/%d.tbl", i);
+
+            char **args = malloc((num_files + 3) * sizeof(char *));
+            args[0] = "./map";
+            args[1] = strdup(buffer);
+
+            strcpy(args[1], buffer);
+
+            for (int j = 0; j < num_files; j++) {
+                args[j + 2] = strdup(file_names[file_name_index + j]);
+            }
+
+            args[num_files + 2] = NULL;
+
+            execv("./map", args);
+
+            perror("execv failed");
+            for (int i = 0; args[i] != NULL; i++) {
+                free(args[i]);
+            }
+            free(args);
+            exit(1);
+        }
+        file_name_index += num_files;
+    }
+
+    // wait for all children to finish
+    for (int i = 0; i < n_map; i++) {
+        int status;
+        pid_t pid = wait(&status);
+
+        if (WIFEXITED(status)) {
+            int exit_code = WEXITSTATUS(status);
+
+            if (exit_code != 0) {
+                fprintf(stderr, "Error: Child %d failed with status %d\n", pid, exit_code);
+                exit(1);
+            }
+        } else {
+            fprintf(stderr, "Error: Child %d terminated abnormally\n", pid);
+            exit(1);
+        }
+    }
+
     return 0;
 }
