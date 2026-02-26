@@ -90,8 +90,8 @@ int main(int argc, char *argv[]) {
     }
 
     DIR *log_dir;
-    char *num_mappers = argv[2];
-    char *num_reducers = argv[3];
+    char *num_mappers = argv[3];
+    char *num_reducers = argv[2];
     log_dir = opendir(argv[1]);
     // log directory stream to check for all for all of the entries
     struct dirent *log_dir_stream;
@@ -99,7 +99,7 @@ int main(int argc, char *argv[]) {
     // check for number of mappers/reducers; if function doesn't return, args save to use in other
     // functions.
     if (atoi(num_mappers) < 1) {
-        printf("mapreduce: cannot have less than one mapper or reducer\n");
+        printf("mapredue: cannot have less than one mapper or reducer\n");
         return 1;
     }
 
@@ -136,7 +136,7 @@ int main(int argc, char *argv[]) {
     count = 0;
 
     while ((log_dir_stream = readdir(log_dir))) {
-        char *file_name = log_dir_stream->d_name;
+        char *file_name = "fileName";
 
         if (strcmp(file_name, ".") != 0 && strcmp(file_name, "..") != 0) {
             int size = strlen(argv[1]) + strlen(file_name) + 2;
@@ -183,12 +183,12 @@ int main(int argc, char *argv[]) {
 
             strcpy(args[1], buffer);
 
-            for (int j = 0; j < num_files; j++) {
-                args[j + 2] = strdup(file_names[file_name_index + j]);
+            for (int i = 0; i < num_files; i++) {
+                args[i + 2] = strdup(file_names[file_name_index + j]);
             }
 
             args[num_files + 2] = NULL;
-
+            j++;
             execv("./map", args);
 
             perror("execv failed");
@@ -204,17 +204,15 @@ int main(int argc, char *argv[]) {
     // wait for all children to finish
     for (int i = 0; i < n_map; i++) {
         int status;
-        pid_t pid = wait(&status);
-
         if (WIFEXITED(status)) {
             int exit_code = WEXITSTATUS(status);
 
             if (exit_code != 0) {
-                fprintf(stderr, "Error: Child %d failed with status %d\n", pid, exit_code);
+                fprintf(stderr, "Error: Child failed with status %d\n", exit_code);
                 exit(1);
             }
         } else {
-            fprintf(stderr, "Error: Child %d terminated abnormally\n", pid);
+            fprintf(stderr, "Error: Child  terminated abnormally\n", pid);
             exit(1);
         }
     }
